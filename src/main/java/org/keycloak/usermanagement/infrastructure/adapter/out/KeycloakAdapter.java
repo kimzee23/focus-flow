@@ -71,7 +71,7 @@ public class KeycloakAdapter {
         return "login-token-placeholder";
     }
     public void resetPassword(String userId, String newPassword) {
-        RealmResource realm = keycloak.realm(realmName); // RealmResource
+        RealmResource realm = keycloak.realm(realmName);
         UsersResource users = realm.users();
         UserResource userResource = users.get(userId);
 
