@@ -23,6 +23,8 @@ public class UserManagementService implements UserManagementUseCase {
                 request.password()
         );
 
+        keycloakAdapter.triggerEmailVerification(userId);
+
         return new UserResponse(userId, request.username(), request.email(), true);
     }
 

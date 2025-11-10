@@ -1,11 +1,12 @@
 package org.keycloak.usermanagement.infrastructure.adapter.out;
 
+
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.usermanagement.domain.exception.UserAlreadyExistsException;
 import org.keycloak.usermanagement.domain.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +25,6 @@ public class KeycloakAdapter {
         this.realmName = realmName;
     }
 
-
     public String createUser(String username, String email, String password) {
         List<UserRepresentation> existingUsers = keycloak.realm(realmName).users().search(email);
         if (!existingUsers.isEmpty()) {
@@ -35,6 +35,7 @@ public class KeycloakAdapter {
         user.setUsername(username);
         user.setEmail(email);
         user.setEnabled(true);
+        user.setEmailVerified(false);
 
         keycloak.realm(realmName).users().create(user);
 
@@ -44,32 +45,29 @@ public class KeycloakAdapter {
         cred.setTemporary(false);
 
         List<UserRepresentation> users = keycloak.realm(realmName).users().search(username);
-        if (users.isEmpty()) {
-            throw new RuntimeException("User creation failed");
-        }
+        if (users.isEmpty()) throw new RuntimeException("User creation failed");
 
         String userId = users.get(0).getId();
         keycloak.realm(realmName).users().get(userId).resetPassword(cred);
 
         return userId;
     }
-
     public void deactivateUser(String userId) {
-        UserRepresentation user = keycloak.realm("user-management").users().get(userId).toRepresentation();
+        UserRepresentation user = keycloak.realm(realmName).users().get(userId).toRepresentation();
         user.setEnabled(false);
-        keycloak.realm("user-management").users().get(userId).update(user);
+        keycloak.realm(realmName).users().get(userId).update(user);
     }
 
-    public UserRepresentation getUserByEmail(String email){
-        List<UserRepresentation> users = keycloak.realm("user-management").users().search("email");
-        if (users.isEmpty()){
-            throw new UserNotFoundException("User not found");
-        }
+    public UserRepresentation getUserByEmail(String email) {
+        List<UserRepresentation> users = keycloak.realm(realmName).users().search(email);
+        if (users.isEmpty()) throw new UserNotFoundException("User not found");
         return users.get(0);
     }
+
     public String login(String username, String password) {
         return "login-token-placeholder";
     }
+
     public void resetPassword(String userId, String newPassword) {
         RealmResource realm = keycloak.realm(realmName);
         UsersResource users = realm.users();
@@ -83,15 +81,20 @@ public class KeycloakAdapter {
         userResource.resetPassword(cred);
     }
 
-
-    public void triggerResetPassword(String email){
+    public void triggerResetPassword(String email) {
         List<UserRepresentation> users = keycloak.realm(realmName).users().search(email);
-        if (users.isEmpty()){
-            throw new UserNotFoundException("User not found");
-        }
+        if (users.isEmpty()) throw new UserNotFoundException("User not found");
+
         String userId = users.get(0).getId();
         keycloak.realm(realmName).users().get(userId)
                 .executeActionsEmail(List.of("UPDATE_PASSWORD"));
+    }
 
+    public void triggerEmailVerification(String userId) {
+        RealmResource realm = keycloak.realm(realmName);
+        UsersResource users = realm.users();
+        UserResource userResource = users.get(userId);
+
+        userResource.sendVerifyEmail();
     }
 }
