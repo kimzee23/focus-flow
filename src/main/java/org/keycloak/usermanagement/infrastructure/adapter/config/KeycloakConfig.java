@@ -1,7 +1,5 @@
 package org.keycloak.usermanagement.infrastructure.adapter.config;
 
-
-
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,19 +9,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class KeycloakConfig {
 
-    @Value("${keycloak.auth-server-url:http://localhost:8090}")
+    @Value("${keycloak.auth-server-url}")
     private String serverUrl;
 
-    @Value("${keycloak.realm:master}")
+    @Value("${keycloak.realm}")
     private String realm;
 
-    @Value("${keycloak.admin-username:admin}")
-    private String adminUsername;
-
-    @Value("${keycloak.admin-password:admin}")
-    private String adminPassword;
-
-    @Value("${keycloak.client-id:admin-cli}")
+    @Value("${keycloak.client-id}")
     private String clientId;
 
     @Value("${keycloak.credentials.secret}")
@@ -34,9 +26,9 @@ public class KeycloakConfig {
         return KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
                 .realm(realm)
-                .username(adminUsername)
-                .password(adminPassword)
+                .grantType("client_credentials")
                 .clientId(clientId)
+                .clientSecret(clientSecret)
                 .build();
     }
 }
