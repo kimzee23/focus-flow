@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class KeycloakConfig {
 
-    @Value("${keycloak.auth-server-url:http://localhost:8080}")
+    @Value("${keycloak.auth-server-url:http://localhost:8090}")
     private String serverUrl;
 
     @Value("${keycloak.realm:master}")
@@ -25,6 +25,9 @@ public class KeycloakConfig {
 
     @Value("${keycloak.client-id:admin-cli}")
     private String clientId;
+
+    @Value("${keycloak.credentials.secret}")
+    private String clientSecret;
 
     @Bean
     public Keycloak keycloak() {

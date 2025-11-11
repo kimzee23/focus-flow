@@ -10,4 +10,5 @@ public interface UserManagementUseCase {
     void deactivateAccount(String userId);
     void forgotPassword(String email);
     void resetPassword(String userId, String newPassword);
+    void triggerEmailVerification(String userId);
 }

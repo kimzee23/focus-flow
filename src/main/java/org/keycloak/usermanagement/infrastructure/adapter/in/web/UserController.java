@@ -39,4 +39,9 @@ public class UserController {
         userService.forgotPassword(email);
         return ResponseEntity.ok().build();
     }
+    @PostMapping("/verify-email/{userId}")
+    public ResponseEntity<Void> verifyEmail(@PathVariable String userId) {
+        userService.triggerEmailVerification(userId);
+        return ResponseEntity.ok().build();
+    }
 }

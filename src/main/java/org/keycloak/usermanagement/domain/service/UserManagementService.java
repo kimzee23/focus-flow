@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+
 public class UserManagementService implements UserManagementUseCase {
 
     private final KeycloakAdapter keycloakAdapter;
@@ -57,5 +58,10 @@ public class UserManagementService implements UserManagementUseCase {
     public void resetPassword(String userId, String newPassword) {
         keycloakAdapter.resetPassword(userId, newPassword);
 
+    }
+
+    @Override
+    public void triggerEmailVerification(String userId) {
+        keycloakAdapter.triggerEmailVerification(userId);
     }
 }

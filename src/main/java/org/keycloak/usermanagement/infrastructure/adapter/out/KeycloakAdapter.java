@@ -81,6 +81,7 @@ public class KeycloakAdapter {
         userResource.resetPassword(cred);
     }
 
+
     public void triggerResetPassword(String email) {
         List<UserRepresentation> users = keycloak.realm(realmName).users().search(email);
         if (users.isEmpty()) throw new UserNotFoundException("User not found");
@@ -91,10 +92,9 @@ public class KeycloakAdapter {
     }
 
     public void triggerEmailVerification(String userId) {
-        RealmResource realm = keycloak.realm(realmName);
-        UsersResource users = realm.users();
-        UserResource userResource = users.get(userId);
-
-        userResource.sendVerifyEmail();
+        keycloak.realm(realmName)
+                .users()
+                .get(userId)
+                .sendVerifyEmail();
     }
 }
