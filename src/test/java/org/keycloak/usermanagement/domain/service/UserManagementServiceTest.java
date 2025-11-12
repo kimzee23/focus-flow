@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.usermanagement.application.dto.request.LoginRequest;
 import org.keycloak.usermanagement.application.dto.request.SignupRequest;
+import org.keycloak.usermanagement.application.dto.response.UserResponse;
 import org.keycloak.usermanagement.infrastructure.adapter.out.KeycloakAdapter;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,7 +48,7 @@ class UserManagementServiceTest {
         when(keycloakAdapter.login(request.email(), request.password())).thenReturn("token");
         when(keycloakAdapter.getUserByEmail(request.email())).thenReturn(mockUser);
 
-        var response = userService.login(request);
+        UserResponse response = userService.login(request);
 
         assertEquals("user-id-1234", response.id());
         assertEquals("ade", response.username());

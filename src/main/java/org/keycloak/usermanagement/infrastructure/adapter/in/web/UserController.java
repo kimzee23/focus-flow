@@ -1,6 +1,7 @@
 package org.keycloak.usermanagement.infrastructure.adapter.in.web;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.usermanagement.application.dto.request.LoginRequest;
 import org.keycloak.usermanagement.application.dto.request.SignupRequest;
 import org.keycloak.usermanagement.application.dto.response.UserResponse;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
 @RequestMapping("api/user")
 @AllArgsConstructor
 @RestController

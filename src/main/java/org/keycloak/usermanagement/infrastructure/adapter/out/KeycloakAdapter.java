@@ -1,6 +1,7 @@
 package org.keycloak.usermanagement.infrastructure.adapter.out;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Slf4j
 @Component
 public class KeycloakAdapter {
 
@@ -78,6 +80,7 @@ public class KeycloakAdapter {
         UserRepresentation user = keycloak.realm(realmName).users().get(userId).toRepresentation();
         user.setEnabled(false);
         keycloak.realm(realmName).users().get(userId).update(user);
+
     }
     public UserRepresentation getUserByEmail(String email) {
         try {
@@ -86,6 +89,7 @@ public class KeycloakAdapter {
                     .search(null, null, null, email, 0, 1);
             if (users == null || users.isEmpty()) {
                 throw new UserNotFoundException("User not found");
+
             }
             return users.get(0);
         } catch (Exception e) {
