@@ -36,6 +36,11 @@ public class UserController {
         userService.deactivateAccount(userId);
         return ResponseEntity.noContent().build();
     }
+    @PostMapping("/activateUser/{userId}")
+    public ResponseEntity<Void> activateUser(@PathVariable String userId) {
+        userService.activateAccount(userId);
+        return ResponseEntity.noContent().build();
+    }
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotpassword(@RequestParam String email) {
         userService.forgotPassword(email);

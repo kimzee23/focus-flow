@@ -50,6 +50,10 @@ public class UserManagementService implements UserManagementUseCase {
     public void deactivateAccount(String userId) {
         keycloakAdapter.deactivateUser(userId);
     }
+    @Override
+    public void activateAccount(String userId){
+        keycloakAdapter.activateUser(userId);
+    }
 
     @Override
     public void forgotPassword(String email) {

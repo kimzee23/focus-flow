@@ -96,6 +96,12 @@ public class KeycloakAdapter {
             throw new RuntimeException("Failed to fetch user: " + e.getMessage(), e);
         }
     }
+    public void activateUser(String userId){
+        UserResource userResource = keycloak.realm(realmName).users().get(userId);
+        UserRepresentation user = userResource.toRepresentation();
+        user.setEnabled(true);
+        userResource.update(user);
+    }
 
 
     public String login(String usernameOrEmail, String password) {
