@@ -2,9 +2,11 @@ package org.keycloak.usermanagement.infrastructure.adapter.out;
 
 
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.usermanagement.domain.exception.UserAlreadyExistsException;
@@ -20,10 +22,22 @@ public class KeycloakAdapter {
     private final Keycloak keycloak;
     private final String realmName;
 
+
+    @Value("${keycloak.auth-server-url}")
+    private String authServerUrl;
+
+    @Value("${keycloak.client-id}")
+    private String clientId;
+
+    @Value("${keycloak.credentials.secret}")
+    private String clientSecret;
+
+
     public KeycloakAdapter(Keycloak keycloak, @Value("${keycloak.user-realm:user-management}") String realmName) {
         this.keycloak = keycloak;
         this.realmName = realmName;
     }
+
 
     public String createUser(String username, String email, String password) {
         List<UserRepresentation> existingUsers = keycloak.realm(realmName)
@@ -80,9 +94,25 @@ public class KeycloakAdapter {
     }
 
 
-    public String login(String username, String password) {
-        return "login-token-placeholder";
+    public String login(String usernameOrEmail, String password) {
+        try {
+            Keycloak userKeycloak = KeycloakBuilder.builder()
+                    .serverUrl(authServerUrl)
+                    .realm(realmName)
+                    .grantType("password")
+                    .clientId(clientId)
+                    .clientSecret(clientSecret)
+                    .username(usernameOrEmail)
+                    .password(password)
+                    .build();
+
+            AccessTokenResponse tokenResponse = userKeycloak.tokenManager().getAccessToken();
+            return tokenResponse.getToken();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid username/email or password");
+        }
     }
+
 
     public void resetPassword(String userId, String newPassword) {
         RealmResource realm = keycloak.realm(realmName);
@@ -99,8 +129,11 @@ public class KeycloakAdapter {
 
 
     public void triggerResetPassword(String email) {
-        List<UserRepresentation> users = keycloak.realm(realmName).users().search(email);
+        List<UserRepresentation> users = keycloak.realm(realmName)
+                .users()
+                .search(null, null, null, email, 0, 1);
         if (users.isEmpty()) throw new UserNotFoundException("User not found");
+
 
         String userId = users.get(0).getId();
         keycloak.realm(realmName).users().get(userId)

@@ -37,7 +37,7 @@ public class UserManagementService implements UserManagementUseCase {
             throw new IllegalStateException("Please verify your email");
         }
         String token = keycloakAdapter.login(request.email(), request.password());
-        
+
         return new UserResponse(
                 user.getId(),
                 user.getUsername(),
