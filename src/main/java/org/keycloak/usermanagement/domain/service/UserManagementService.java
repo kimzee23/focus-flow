@@ -31,11 +31,13 @@ public class UserManagementService implements UserManagementUseCase {
 
     @Override
     public UserResponse login(LoginRequest request) {
-
-        String token = keycloakAdapter.login(request.email(), request.password());
-
         UserRepresentation user = keycloakAdapter.getUserByEmail(request.email());
 
+        if (!user.isEmailVerified()){
+            throw new IllegalStateException("Please verify your email");
+        }
+        String token = keycloakAdapter.login(request.email(), request.password());
+        
         return new UserResponse(
                 user.getId(),
                 user.getUsername(),

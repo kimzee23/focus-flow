@@ -26,8 +26,11 @@ public class KeycloakAdapter {
     }
 
     public String createUser(String username, String email, String password) {
-        List<UserRepresentation> existingUsers = keycloak.realm(realmName).users().search(email);
-        if (!existingUsers.isEmpty()) {
+        List<UserRepresentation> existingUsers = keycloak.realm(realmName)
+                .users()
+                .search(null, null, null, email, 0, 1);
+
+        if (existingUsers != null && !existingUsers.isEmpty()) {
             throw new UserAlreadyExistsException("User with email " + email + " already exists");
         }
 
@@ -44,25 +47,38 @@ public class KeycloakAdapter {
         cred.setValue(password);
         cred.setTemporary(false);
 
-        List<UserRepresentation> users = keycloak.realm(realmName).users().search(username);
-        if (users.isEmpty()) throw new RuntimeException("User creation failed");
+        List<UserRepresentation> users = keycloak.realm(realmName).users().search(username, true);
+        if (users == null || users.isEmpty()) {
+            throw new RuntimeException("User creation failed");
+        }
 
         String userId = users.get(0).getId();
+
         keycloak.realm(realmName).users().get(userId).resetPassword(cred);
 
         return userId;
     }
+
+
     public void deactivateUser(String userId) {
         UserRepresentation user = keycloak.realm(realmName).users().get(userId).toRepresentation();
         user.setEnabled(false);
         keycloak.realm(realmName).users().get(userId).update(user);
     }
-
     public UserRepresentation getUserByEmail(String email) {
-        List<UserRepresentation> users = keycloak.realm(realmName).users().search(email);
-        if (users.isEmpty()) throw new UserNotFoundException("User not found");
-        return users.get(0);
+        try {
+            List<UserRepresentation> users = keycloak.realm(realmName)
+                    .users()
+                    .search(null, null, null, email, 0, 1);
+            if (users == null || users.isEmpty()) {
+                throw new UserNotFoundException("User not found");
+            }
+            return users.get(0);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch user: " + e.getMessage(), e);
+        }
     }
+
 
     public String login(String username, String password) {
         return "login-token-placeholder";
@@ -90,11 +106,13 @@ public class KeycloakAdapter {
         keycloak.realm(realmName).users().get(userId)
                 .executeActionsEmail(List.of("UPDATE_PASSWORD"));
     }
-
     public void triggerEmailVerification(String userId) {
-        keycloak.realm(realmName)
-                .users()
-                .get(userId)
-                .sendVerifyEmail();
+        try {
+            keycloak.realm(realmName).users().get(userId).sendVerifyEmail();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Skipping email verification: " + e.getMessage());
+        }
     }
+
 }
